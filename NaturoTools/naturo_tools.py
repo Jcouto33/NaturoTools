@@ -18,6 +18,12 @@ class NaturoToolsGui(Tk):
     def __init__(self, logger=None):
         Tk.__init__(self)
 
+        reload(sys)
+        sys.setdefaultencoding('utf8')
+
+        # Update the size of dialogue box
+        self.option_add("*Dialog.msg.wrapLength", "20i")
+
         self.logger = logger
         self.panel = None
         self.sub_panel = None
@@ -28,9 +34,15 @@ class NaturoToolsGui(Tk):
         self.selected_family = None
         self.data_json = None
         self.client_info = None
+        self.comment = None
+        self.vsb_comment = None
+        self.table_panel = None
+        self.listbox = None
+        self.enter = None
+        self.full_data = {"advice_sheet": []}
 
         # Update the size of dialogue box
-        self.option_add("*Dialog.msg.wrapLength", "20i")
+        self.option_add("*Dialog.msg.wrapLength", "25i")
 
         # Configure background
         self.configure(background='gray65')
@@ -77,6 +89,16 @@ class NaturoToolsGui(Tk):
         input_city = Entry(self.view_window, textvariable=self.city, width=40)
         self.city.set("")
 
+        job = Label(self.view_window, text='Profession :')
+        self.job = StringVar()
+        input_job = Entry(self.view_window, textvariable=self.job, width=40)
+        self.job.set("")
+
+        family_situation = Label(self.view_window, text='Situation Familiale :')
+        self.family_situation = StringVar()
+        input_family_situation = Entry(self.view_window, textvariable=self.family_situation, width=40)
+        self.family_situation.set("")
+
         tel = Label(self.view_window, text='Téléphone :')
         self.tel = StringVar()
         input_tel = Entry(self.view_window, textvariable=self.tel, width=40)
@@ -87,12 +109,12 @@ class NaturoToolsGui(Tk):
         input_mail = Entry(self.view_window, textvariable=self.mail, width=40)
         self.mail.set("")
 
-        width = Label(self.view_window, text='Taille :')
+        width = Label(self.view_window, text='Taille (cm/m:')
         self.width = StringVar()
         input_width = Entry(self.view_window, textvariable=self.width, width=40)
         self.width.set("")
 
-        weight = Label(self.view_window, text='Poids :')
+        weight = Label(self.view_window, text='Poids (kg):')
         self.weight = StringVar()
         input_weight = Entry(self.view_window, textvariable=self.weight, width=40)
         self.weight.set("")
@@ -122,12 +144,14 @@ class NaturoToolsGui(Tk):
         address.grid(row=4, column=0, padx=2, pady=2)
         code.grid(row=5, column=0, padx=2, pady=2)
         city.grid(row=6, column=0, padx=2, pady=2)
-        width.grid(row=7, column=0, padx=2, pady=2)
-        weight.grid(row=8, column=0, padx=2, pady=2)
-        tel.grid(row=9, column=0, padx=2, pady=2)
-        mail.grid(row=10, column=0, padx=2, pady=2)
-        history.grid(row=11, column=0, padx=2, pady=2)
-        label_select_config.grid(row=12, column=0, padx=2, pady=2)
+        job.grid(row=7, column=0, padx=2, pady=2)
+        family_situation.grid(row=8, column=0, padx=2, pady=2)
+        width.grid(row=9, column=0, padx=2, pady=2)
+        weight.grid(row=10, column=0, padx=2, pady=2)
+        tel.grid(row=11, column=0, padx=2, pady=2)
+        mail.grid(row=12, column=0, padx=2, pady=2)
+        history.grid(row=13, column=0, padx=2, pady=2)
+        label_select_config.grid(row=14, column=0, padx=2, pady=2)
 
         input_client_name.grid(row=1, column=1, padx=2, pady=2)
         input_client_last_name.grid(row=2, column=1, padx=2, pady=2)
@@ -135,17 +159,19 @@ class NaturoToolsGui(Tk):
         input_address.grid(row=4, column=1, padx=2, pady=2)
         input_code.grid(row=5, column=1, padx=2, pady=2)
         input_city.grid(row=6, column=1, padx=2, pady=2)
-        input_width.grid(row=7, column=1, padx=2, pady=2)
-        input_weight.grid(row=8, column=1, padx=2, pady=2)
-        input_tel.grid(row=9, column=1, padx=2, pady=2)
-        input_mail.grid(row=10, column=1, padx=2, pady=2)
-        self.text.grid(row=11, column=1, padx=2, pady=2)
-        self.vsb.grid(row=11, column=2, sticky=N + S + W)
-        input_data_config.grid(row=12, column=1, padx=2, pady=2)
+        input_job.grid(row=7, column=1, padx=2, pady=2)
+        input_family_situation.grid(row=8, column=1, padx=2, pady=2)
+        input_width.grid(row=9, column=1, padx=2, pady=2)
+        input_weight.grid(row=10, column=1, padx=2, pady=2)
+        input_tel.grid(row=11, column=1, padx=2, pady=2)
+        input_mail.grid(row=12, column=1, padx=2, pady=2)
+        self.text.grid(row=13, column=1, padx=2, pady=2)
+        self.vsb.grid(row=13, column=2, sticky=N + S + W)
+        input_data_config.grid(row=14, column=1, padx=2, pady=2)
 
-        button_data_selection.grid(row=12, column=2, padx=2, pady=2)
-        button_open_panel.grid(row=13, column=1, padx=2, pady=2)
-        button_clean_client_data.grid(row=13, column=2, padx=2, pady=2)
+        button_data_selection.grid(row=14, column=2, padx=2, pady=2)
+        button_open_panel.grid(row=15, column=1, padx=2, pady=2)
+        button_clean_client_data.grid(row=15, column=2, padx=2, pady=2)
 
         # Place it in window
         self.label_title.grid(row=0, column=0, padx=10, pady=10)
@@ -161,6 +187,7 @@ class NaturoToolsGui(Tk):
         self.protocol('WM_DELETE_WINDOW', self.ask_before_quit)  # self is your root window
 
     def clean_client_data(self):
+        self.full_data = {"advice_sheet": []}
         self.m_checkbox.set(False)
         self.mme_checkbox.set(False)
         self.mlle_checkbox.set(False)
@@ -175,6 +202,23 @@ class NaturoToolsGui(Tk):
         self.width.set("")
         self.weight.set("")
         self.text.delete(1.0, END)
+        self.job.set("")
+        self.family_situation.set("")
+
+        try:
+            self.panel.grid_forget()
+        except AttributeError:
+            pass
+
+        try:
+            self.sub_panel.grid_forget()
+        except AttributeError:
+            pass
+
+        try:
+            self.table_panel.grid_forget()
+        except AttributeError:
+            pass
 
     def gender(self):
         # Create label frame
@@ -196,7 +240,7 @@ class NaturoToolsGui(Tk):
             self.destroy()
 
     def askopenfile(self):
-        filename = tkFileDialog.askopenfile(parent=self, initialdir='.', title='Selectionner une base de donnee',
+        filename = tkFileDialog.askopenfile(parent=self, initialdir='.', title='Sélectionner une base de données',
                                             filetypes=[('json files', '.json')])
         try:
             self.data_config.set(filename.name)
@@ -216,12 +260,14 @@ class NaturoToolsGui(Tk):
             pass
         self.panel = PanedWindow(self)
         self.data_json = self.load_json_configuration(self.data_config.get())
+        self.full_data["database"] = self.data_json
         self.client_info = self.get_client_info()
+        self.full_data["client_info"] = self.client_info
         if self.client_info is None:
             return None
 
         # Create label and button
-        label_description = Label(self.panel, text='Selectionner une famille:')
+        label_description = Label(self.panel, text='Sélectionner une famille:')
         # Place it into the window
         label_description.grid(row=0, column=0, padx=2, pady=2)
 
@@ -249,9 +295,14 @@ class NaturoToolsGui(Tk):
         except AttributeError:
             pass
 
+        try:
+            self.table_panel.grid_forget()
+        except AttributeError:
+            pass
+
         self.sub_panel = PanedWindow(self)
         # Create label and button
-        label_description = Label(self.sub_panel, text='Selectionner un paragraphe a ajouter:')
+        label_description = Label(self.sub_panel, text='Sélectionner un\nparagraphe a ajouter:')
         # Place it into the window
         label_description.grid(row=0, column=0, padx=2, pady=2)
         paraph_list = []
@@ -260,22 +311,147 @@ class NaturoToolsGui(Tk):
             paraph_list.append(paraph)
 
         self.paraph = StringVar()
-        input_paraph = Combobox(self.sub_panel, textvariable=self.paraph, state='readonly', width=30)
+        self.paraph.trace('w', self.on_field_change)
+        input_paraph = Combobox(self.sub_panel, textvariable=self.paraph, state='readonly', width=70)
         sorted_list = sorted(paraph_list)
         input_paraph["values"] = sorted_list
         self.paraph.set(sorted_list[0])
         input_paraph.grid(row=1, column=1, padx=2, pady=2)
 
-        button_check_test = Button(self.sub_panel, text='Check Text', command=self.check_text, width=10)
-        button_check_test.grid(row=1, column=2, padx=2, pady=2)
+        comment = Label(self.sub_panel, text='Paragraphe à ajouter :')
+        # Add console
+        self.comment = Text(self.sub_panel, height=12, width=80)
+        self.vsb_comment = Scrollbar(self.sub_panel, orient="vertical", command=self.comment.yview)
+        self.comment.configure(yscrollcommand=self.vsb_comment.set)
+        self.comment.insert(1.0, self.data_json[self.selected_family][self.paraph.get()]["data"])
+
+        comment.grid(row=2, column=0, padx=2, pady=2)
+        self.comment.grid(row=2, column=1, padx=2, pady=2)
+        self.vsb_comment.grid(row=2, column=2, sticky=N + S + W)
+
+        button_add = Button(self.sub_panel, text='Ajouter', command=self.add_paraph, width=10)
+        button_add.grid(row=4, column=2, padx=2, pady=2)
+
+        self.table_panel = PanedWindow(self)
+        label_table = Label(self.table_panel, text='Fiche conseil',font=("Helvetica", 12))
+        label_table.grid(row=0, column=0, padx=2, pady=2)
+
+        self.listbox = Listbox(self.table_panel, width=80, height=20)
+        self.listbox.grid(row=1, column=0, padx=2, pady=2)
+
+        # create a vertical scrollbar to the right of the listbox
+        y_scroll = Scrollbar(self.table_panel, command=self.listbox.yview, orient=VERTICAL)
+        y_scroll.grid(row=1, column=1, sticky=N + S)
+        self.listbox.configure(yscrollcommand=y_scroll.set)
+
+        # use entry widget to display/edit selection
+        self.enter = Entry(self.table_panel, width=80, bg='green')
+        self.enter.insert(0, 'Click on an item in the listbox')
+        self.enter.grid(row=2, column=0)
+        # pressing the return key will update edited line
+        self.enter.bind('<Return>', self.set_list)
+        # or double click left mouse button to update line
+        self.enter.bind('<Double-1>', self.set_list)
+
+        # button to sort listbox
+        button1 = Button(self.table_panel, text='Trier la liste', command=self.sort_list)
+        button1.grid(row=3, column=0, sticky=W)
+
+        # button to save the listbox's data lines to a file
+        button2 = Button(self.table_panel, text='Sauver la liste dans un fichier', command=self.save_list)
+        button2.grid(row=4, column=0, sticky=W)
+
+        # button to add a line to the listbox
+        button3 = Button(self.table_panel, text='Ajouter à la liste', command=self.add_item)
+        button3.grid(row=3, column=0, sticky=E)
+
+        # button to delete a line from listbox
+        button4 = Button(self.table_panel, text='Suprimer la ligne sélectionner', command=self.delete_item)
+        button4.grid(row=4, column=0, sticky=E)
+
+        # left mouse click on a list item to display selection
+        self.listbox.bind('<ButtonRelease-1>', self.get_list)
 
         self.sub_panel.grid(row=4, column=0, padx=6, pady=6)
+        self.table_panel.grid(row=2, column=1, padx=6, pady=6)
 
-    def check_text(self):
+    def set_list(self, event):
+        """
+        insert an edited line from the entry widget
+        back into the listbox
+        """
+        try:
+            index = self.listbox.curselection()[0]
+            # delete old listbox line
+            self.listbox.delete(index)
+        except IndexError:
+            index = END
+        # insert edited item back into listbox1 at index
+        self.listbox.insert(index, self.enter.get())
 
-        tkMessageBox.showinfo("Check Text", "Text:\n{0}\nComment:\n{1}".format(
-            self.data_json[self.selected_family][self.paraph.get()]["data"].encode(),
-            self.data_json[self.selected_family][self.paraph.get()]["comment"]))
+    def add_item(self):
+        """
+        add the text in the Entry widget to the end of the listbox
+        """
+        self.listbox.insert(END, self.enter.get())
+        self.full_data["advice_sheet"].append({"paraph": self.paraph.get(),
+                                               "data": self.enter.get()})
+
+    def delete_item(self):
+        """
+        delete a selected line from the listbox
+        """
+        try:
+            # get selected line index
+            index = self.listbox.curselection()[0]
+            self.listbox.delete(index)
+        except IndexError:
+            pass
+
+    def sort_list(self):
+        """
+        function to sort listbox items case insensitive
+        """
+        temp_list = list(self.listbox.get(0, END))
+        list_sorted = sorted(temp_list)        # delete contents of present listbox
+        self.listbox.delete(0, END)
+        # load listbox with sorted data
+        for item in list_sorted:
+            self.listbox.insert(END, item)
+
+    def save_list(self):
+        """
+        save the current listbox contents to a file
+        """
+        # get a list of listbox lines
+        temp_list = list(self.listbox.get(0, END))
+        # add a trailing newline char to each line
+        temp_list = [chem + '\n' for chem in temp_list]
+        # give the file a different name
+        fout = open("chem_data2.txt", "w")
+        fout.writelines(temp_list)
+        fout.close()
+
+    def on_field_change(self, index, value, op):
+        try:
+            self.comment.delete(1.0, END)
+            self.comment.insert(1.0, self.data_json[self.selected_family][self.paraph.get()]["data"])
+        except AttributeError:
+            pass
+
+    def get_list(self, event):
+        """
+        function to read the listbox selection
+        and put the result in an entry widget
+        """
+        # get selected line index
+        index = self.listbox.curselection()[0]
+        # get the line's text
+        seltext = self.listbox.get(index)
+        # delete previous text in enter1
+        self.enter.delete(0, END)
+        # now display the selected text
+        self.enter.insert(0, seltext)
 
     def get_gender(self):
         gender_list = []
@@ -287,10 +463,10 @@ class NaturoToolsGui(Tk):
         gender_list.append(checkbox_mlle)
 
         if sum(map(bool, gender_list)) < 1:
-            tkMessageBox.showerror("Pas de genre", "Merci de selectionner un genre Mr, Mme, Mlle.")
+            tkMessageBox.showerror("Pas de genre", "Merci de sélectionner un genre Mr, Mme, Mlle.")
             return False
         if sum(map(bool, gender_list)) != 1:
-            tkMessageBox.showwarning("Trop de genre selectionner", "Merci de selectionner qu'un genre Mr, Mme, Mlle.")
+            tkMessageBox.showwarning("Trop de genre sélectionner", "Merci de sélectionner qu'un genre Mr, Mme, Mlle.")
             return False
 
         if checkbox_mr:
@@ -317,8 +493,11 @@ class NaturoToolsGui(Tk):
                 tkMessageBox.showwarning("Format email incorrect",
                                          "Format email, Merci de rentrer le mail au format example@domain.com.")
                 return None
+        gender = self.get_gender()
+        if not gender:
+            return None
 
-        client_info = {"gender": self.get_gender(),
+        client_info = {"gender": gender,
                        "name": self.client_name.get(),
                        "last_name": self.client_last_name.get(),
                        "birthday": birthday,
@@ -329,8 +508,16 @@ class NaturoToolsGui(Tk):
                        "weight": self.weight.get(),
                        "tel": self.tel.get(),
                        "mail": addressToVerify,
-                       "history": self.text.get("1.0", END)}
+                       "history": self.text.get("1.0", END),
+                       "job": self.job.get(),
+                       "family_situation": self.family_situation.get()}
         return client_info
+
+    def add_paraph(self):
+        self.listbox.insert(END, "{0} -- {1}".format(self.paraph.get(), self.comment.get(1.0, END)))
+        self.full_data["advice_sheet"].append({"paraph": self.paraph.get(),
+                                               "data": self.comment.get(1.0, END)})
+        self.logger.info("{0}".format(self.full_data))
 
 
 if __name__ == '__main__':

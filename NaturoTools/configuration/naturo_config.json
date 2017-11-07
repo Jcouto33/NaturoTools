@@ -1,30 +1,24 @@
 {
   "Physio": {
     "huile_essentiel": {
-      "data": "Huile essentiel ravisntara ddddéddddddddddddddddddddddddfg\nddddddddddddddddddddkkkkkkkkkkkkkkkk\njbbbbbbbbbbbbbbbdazaljnfjkz",
-      "comment" : "TOTO tutuGRSGHER"
+      "data": "Huile essentiel ravisntara ddddéddddddddddddddddddddddddfg\nddddddddddddddddddddkkkkkkkkkkkkkkkk\njbbbbbbbbbbbbbbbdazaljnfjkz"
     },
     "huile_essentiel2": {
-      "data": "Huile essentiel ravisntara",
-      "comment" : "TOTO tutuGZERHG"
+      "data": "Huile essentiel ravisntara"
     },
     "huile_essentiel3": {
-      "data": "Huile essentiel ravisntara",
-      "comment" : "TOTO tutuGEHDETG"
+      "data": "Huile essentiel ravisntara"
     }
   },
   "Patho": {
     "test1": {
-      "data": "test1test1test1test1",
-      "comment" : "TOTO tutuSDGFZ"
+      "data": "test1test1test1test1"
     },
     "test2": {
-      "data": "test1test1te2222st1test1",
-      "comment" : "TOTO SZGHZEH"
+      "data": "test1test1te2222st1test1"
     },
     "test3": {
-      "data": "test1test1tes3333t1test1",
-      "comment" : "QHETJER tutu"
+      "data": "test1test1tes3333t1test1"
     }
   }
 
