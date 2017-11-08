@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import io
 import os
 import json
 import tkMessageBox
@@ -24,6 +25,8 @@ class NaturoToolsGui(Tk):
         # Update the size of dialogue box
         self.option_add("*Dialog.msg.wrapLength", "20i")
 
+        self.data_base = JSON_CONFIG_PATH
+        self.first_click = True
         self.logger = logger
         self.panel = None
         self.sub_panel = None
@@ -40,6 +43,24 @@ class NaturoToolsGui(Tk):
         self.listbox = None
         self.enter = None
         self.full_data = {"advice_sheet": []}
+
+        self.menubar = Menu(self)
+        self.filemenu = Menu(self.menubar, tearoff=0)
+
+        self.filemenu.add_command(label="Clean client", command=self.clean_client_data)
+        self.filemenu.add_command(label="Ouvrir client", command=self.open_client)
+        self.filemenu.add_command(label="Sauver client ...", command=self.save_client)
+        self.filemenu.add_command(label="Sélectionner base de donnée", command=self.askopenfile)
+
+        self.filemenu.add_separator()
+
+        self.filemenu.add_command(label="Quitter", command=self.ask_before_quit)
+        self.menubar.add_cascade(label="Fichier", menu=self.filemenu)
+
+        self.helpmenu = Menu(self.menubar, tearoff=0)
+        self.helpmenu.add_command(label="Help Index", command=self.not_yet_implemented)
+        self.helpmenu.add_command(label="About...", command=self.not_yet_implemented)
+        self.menubar.add_cascade(label="Help", menu=self.helpmenu)
 
         # Update the size of dialogue box
         self.option_add("*Dialog.msg.wrapLength", "25i")
@@ -74,6 +95,11 @@ class NaturoToolsGui(Tk):
         input_birthday = Entry(self.view_window, textvariable=self.birthday, width=40)
         self.birthday.set("__/__/____")
 
+        age = Label(self.view_window, text='Age :')
+        self.age = StringVar()
+        input_age = Entry(self.view_window, textvariable=self.age, width=40)
+        self.age.set("")
+
         address = Label(self.view_window, text='Adresse :')
         self.address = StringVar()
         input_address = Entry(self.view_window, textvariable=self.address, width=40)
@@ -99,6 +125,16 @@ class NaturoToolsGui(Tk):
         input_family_situation = Entry(self.view_window, textvariable=self.family_situation, width=40)
         self.family_situation.set("")
 
+        width = Label(self.view_window, text='Taille (cm/m):')
+        self.width = StringVar()
+        input_width = Entry(self.view_window, textvariable=self.width, width=40)
+        self.width.set("")
+
+        weight = Label(self.view_window, text='Poids (kg):')
+        self.weight = StringVar()
+        input_weight = Entry(self.view_window, textvariable=self.weight, width=40)
+        self.weight.set("")
+
         tel = Label(self.view_window, text='Téléphone :')
         self.tel = StringVar()
         input_tel = Entry(self.view_window, textvariable=self.tel, width=40)
@@ -109,31 +145,11 @@ class NaturoToolsGui(Tk):
         input_mail = Entry(self.view_window, textvariable=self.mail, width=40)
         self.mail.set("")
 
-        width = Label(self.view_window, text='Taille (cm/m:')
-        self.width = StringVar()
-        input_width = Entry(self.view_window, textvariable=self.width, width=40)
-        self.width.set("")
-
-        weight = Label(self.view_window, text='Poids (kg):')
-        self.weight = StringVar()
-        input_weight = Entry(self.view_window, textvariable=self.weight, width=40)
-        self.weight.set("")
-
         history = Label(self.view_window, text='Pathologie :')
         # Add console
-        self.text = Text(self.view_window, height=5, width=60)
+        self.text = Text(self.view_window, height=5, width=65)
         self.vsb = Scrollbar(self.view_window, orient="vertical", command=self.text.yview)
         self.text.configure(yscrollcommand=self.vsb.set)
-
-        # Create config selection
-        label_select_config = Label(self.view_window, text='Base de données:')
-        self.data_config = StringVar()
-        input_data_config = Entry(self.view_window, textvariable=self.data_config, width=40)
-        self.data_config.set(JSON_CONFIG_PATH)
-
-        button_data_selection = Button(self.view_window, text='Browse', command=self.askopenfile, width=10)
-        button_clean_client_data = Button(self.view_window, text='Clean Client', command=self.clean_client_data,
-                                          width=10)
 
         button_open_panel = Button(self.view_window, text='Load Config', command=self.open_panel,  width=20)
 
@@ -141,42 +157,42 @@ class NaturoToolsGui(Tk):
         client_name.grid(row=1, column=0, padx=2, pady=2)
         client_last_name.grid(row=2, column=0, padx=2, pady=2)
         birthday.grid(row=3, column=0, padx=2, pady=2)
-        address.grid(row=4, column=0, padx=2, pady=2)
-        code.grid(row=5, column=0, padx=2, pady=2)
-        city.grid(row=6, column=0, padx=2, pady=2)
-        job.grid(row=7, column=0, padx=2, pady=2)
-        family_situation.grid(row=8, column=0, padx=2, pady=2)
-        width.grid(row=9, column=0, padx=2, pady=2)
-        weight.grid(row=10, column=0, padx=2, pady=2)
-        tel.grid(row=11, column=0, padx=2, pady=2)
-        mail.grid(row=12, column=0, padx=2, pady=2)
-        history.grid(row=13, column=0, padx=2, pady=2)
-        label_select_config.grid(row=14, column=0, padx=2, pady=2)
+        age.grid(row=4, column=0, padx=2, pady=2)
+        address.grid(row=5, column=0, padx=2, pady=2)
+        code.grid(row=6, column=0, padx=2, pady=2)
+        city.grid(row=7, column=0, padx=2, pady=2)
+        job.grid(row=8, column=0, padx=2, pady=2)
+        family_situation.grid(row=9, column=0, padx=2, pady=2)
+        width.grid(row=10, column=0, padx=2, pady=2)
+        weight.grid(row=11, column=0, padx=2, pady=2)
+        tel.grid(row=12, column=0, padx=2, pady=2)
+        mail.grid(row=13, column=0, padx=2, pady=2)
+        history.grid(row=14, column=0, padx=2, pady=2)
 
         input_client_name.grid(row=1, column=1, padx=2, pady=2)
         input_client_last_name.grid(row=2, column=1, padx=2, pady=2)
         input_birthday.grid(row=3, column=1, padx=2, pady=2)
-        input_address.grid(row=4, column=1, padx=2, pady=2)
-        input_code.grid(row=5, column=1, padx=2, pady=2)
-        input_city.grid(row=6, column=1, padx=2, pady=2)
-        input_job.grid(row=7, column=1, padx=2, pady=2)
-        input_family_situation.grid(row=8, column=1, padx=2, pady=2)
-        input_width.grid(row=9, column=1, padx=2, pady=2)
-        input_weight.grid(row=10, column=1, padx=2, pady=2)
-        input_tel.grid(row=11, column=1, padx=2, pady=2)
-        input_mail.grid(row=12, column=1, padx=2, pady=2)
-        self.text.grid(row=13, column=1, padx=2, pady=2)
-        self.vsb.grid(row=13, column=2, sticky=N + S + W)
-        input_data_config.grid(row=14, column=1, padx=2, pady=2)
+        input_age.grid(row=4, column=1, padx=2, pady=2)
+        input_address.grid(row=5, column=1, padx=2, pady=2)
+        input_code.grid(row=6, column=1, padx=2, pady=2)
+        input_city.grid(row=7, column=1, padx=2, pady=2)
+        input_job.grid(row=8, column=1, padx=2, pady=2)
+        input_family_situation.grid(row=9, column=1, padx=2, pady=2)
+        input_width.grid(row=10, column=1, padx=2, pady=2)
+        input_weight.grid(row=11, column=1, padx=2, pady=2)
+        input_tel.grid(row=12, column=1, padx=2, pady=2)
+        input_mail.grid(row=13, column=1, padx=2, pady=2)
+        self.text.grid(row=14, column=1, padx=2, pady=2)
+        self.vsb.grid(row=14, column=2, sticky=N + S + W)
 
-        button_data_selection.grid(row=14, column=2, padx=2, pady=2)
         button_open_panel.grid(row=15, column=1, padx=2, pady=2)
-        button_clean_client_data.grid(row=15, column=2, padx=2, pady=2)
 
         # Place it in window
         self.label_title.grid(row=0, column=0, padx=10, pady=10)
         gender_window.grid(row=1, column=0, padx=2, pady=2)
         self.view_window.grid(row=2, column=0, padx=6, pady=6)
+
+        self.config(menu=self.menubar)
 
         # Starting log
         self.logger.info("-------------------------------------------------------------------------------")
@@ -204,6 +220,7 @@ class NaturoToolsGui(Tk):
         self.text.delete(1.0, END)
         self.job.set("")
         self.family_situation.set("")
+        self.age.set("")
 
         try:
             self.panel.grid_forget()
@@ -219,6 +236,7 @@ class NaturoToolsGui(Tk):
             self.table_panel.grid_forget()
         except AttributeError:
             pass
+        self.first_click = False
 
     def gender(self):
         # Create label frame
@@ -240,12 +258,77 @@ class NaturoToolsGui(Tk):
             self.destroy()
 
     def askopenfile(self):
-        filename = tkFileDialog.askopenfile(parent=self, initialdir='.', title='Sélectionner une base de données',
+        filename = tkFileDialog.askopenfile(parent=self, initialdir=os.path.join(os.getcwd(), "configuration"),
+                                            title='Sélectionner une base de données',
                                             filetypes=[('json files', '.json')])
         try:
-            self.data_config.set(filename.name)
+            self.data_base = filename.name
         except AttributeError:
             pass
+
+    def save_client(self):
+        if self.client_info is None:
+            tkMessageBox.showwarning("Pas d'info client", "Merci de loader la config avec minimum Nom, Prénom.")
+            return None
+
+        file_opt = options = {}
+        options['filetypes'] = [('all files', '.*'), ('json files', '.json'), ('text files', '.txt')]
+        options['initialfile'] = '{0}_{1}.json'.format(self.client_info["name"], self.client_info["last_name"])
+        options['parent'] = self
+        options['title'] = "Sauver client"
+        options['initialdir'] = os.path.join(os.getcwd(), "client_database")
+
+        filename = tkFileDialog.asksaveasfilename(**file_opt)
+        if filename:
+            with io.open(filename, 'w', encoding='utf8') as json_file:
+                data = json.dumps(self.client_info, ensure_ascii=False)
+                # unicode(data) auto-decodes data to unicode if str
+                json_file.write(unicode(data))
+
+    def open_client(self):
+        filename = tkFileDialog.askopenfile(parent=self, initialdir=os.path.join(os.getcwd(), "client_database"),
+                                            title='Sélectionner un client', filetypes=[('json files', '.json')])
+        try:
+            client = filename.name
+        except AttributeError:
+            tkMessageBox.showwarning("Pas de client", "Merci de sélectionner un fichier de client")
+            return None
+        with open(client) as data_file:
+            data = json.load(data_file)
+
+        gender = data["gender"]
+        if gender == "Mr":
+            self.m_checkbox.set(True)
+            self.mme_checkbox.set(False)
+            self.mlle_checkbox.set(False)
+        elif gender == "Mme":
+            self.m_checkbox.set(False)
+            self.mme_checkbox.set(True)
+            self.mlle_checkbox.set(False)
+        else:
+            self.m_checkbox.set(False)
+            self.mme_checkbox.set(False)
+            self.mlle_checkbox.set(True)
+
+        self.client_name.set(data["name"])
+        self.client_last_name.set(data["last_name"])
+        self.birthday.set(data["birthday"])
+        self.address.set(data["address"])
+        self.code.set(data["code"])
+        self.city.set(data["city"])
+        self.width.set(data["width"])
+        self.weight.set(data["weight"])
+        self.tel.set(data["tel"])
+        self.mail.set(data["mail"])
+        self.job.set(data["job"])
+        self.family_situation.set(data["family_situation"])
+        self.age.set(data["age"])
+        self.text.delete("1.0", END)
+        self.text.insert("1.0", data["history"])
+
+    @staticmethod
+    def not_yet_implemented():
+        tkMessageBox.showinfo("Not yet implemented", "Not yet implemented")
 
     @staticmethod
     def load_json_configuration(config):
@@ -259,7 +342,7 @@ class NaturoToolsGui(Tk):
         except AttributeError:
             pass
         self.panel = PanedWindow(self)
-        self.data_json = self.load_json_configuration(self.data_config.get())
+        self.data_json = self.load_json_configuration(self.data_base)
         self.full_data["database"] = self.data_json
         self.client_info = self.get_client_info()
         self.full_data["client_info"] = self.client_info
@@ -295,10 +378,11 @@ class NaturoToolsGui(Tk):
         except AttributeError:
             pass
 
-        try:
-            self.table_panel.grid_forget()
-        except AttributeError:
-            pass
+        if self.first_click:
+            try:
+                self.table_panel.grid_forget()
+            except AttributeError:
+                pass
 
         self.sub_panel = PanedWindow(self)
         # Create label and button
@@ -320,7 +404,7 @@ class NaturoToolsGui(Tk):
 
         comment = Label(self.sub_panel, text='Paragraphe à ajouter :')
         # Add console
-        self.comment = Text(self.sub_panel, height=12, width=80)
+        self.comment = Text(self.sub_panel, height=6, width=80)
         self.vsb_comment = Scrollbar(self.sub_panel, orient="vertical", command=self.comment.yview)
         self.comment.configure(yscrollcommand=self.vsb_comment.set)
         self.comment.insert(1.0, self.data_json[self.selected_family][self.paraph.get()]["data"])
@@ -330,48 +414,50 @@ class NaturoToolsGui(Tk):
         self.vsb_comment.grid(row=2, column=2, sticky=N + S + W)
 
         button_add = Button(self.sub_panel, text='Ajouter', command=self.add_paraph, width=10)
-        button_add.grid(row=4, column=2, padx=2, pady=2)
+        button_add.grid(row=4, column=1, padx=2, pady=2)
 
-        self.table_panel = PanedWindow(self)
-        label_table = Label(self.table_panel, text='Fiche conseil',font=("Helvetica", 12))
-        label_table.grid(row=0, column=0, padx=2, pady=2)
+        if self.first_click:
+            self.table_panel = PanedWindow(self)
+            label_table = Label(self.table_panel, text='Fiche conseil',font=("Helvetica", 12))
+            label_table.grid(row=0, column=0, padx=2, pady=2)
 
-        self.listbox = Listbox(self.table_panel, width=80, height=20)
-        self.listbox.grid(row=1, column=0, padx=2, pady=2)
+            self.listbox = Listbox(self.table_panel, width=65, height=20)
+            self.listbox.grid(row=1, column=0, padx=2, pady=2)
 
-        # create a vertical scrollbar to the right of the listbox
-        y_scroll = Scrollbar(self.table_panel, command=self.listbox.yview, orient=VERTICAL)
-        y_scroll.grid(row=1, column=1, sticky=N + S)
-        self.listbox.configure(yscrollcommand=y_scroll.set)
+            # create a vertical scrollbar to the right of the listbox
+            y_scroll = Scrollbar(self.table_panel, command=self.listbox.yview, orient=VERTICAL)
+            y_scroll.grid(row=1, column=1, sticky=N + S)
+            self.listbox.configure(yscrollcommand=y_scroll.set)
 
-        # use entry widget to display/edit selection
-        self.enter = Entry(self.table_panel, width=80, bg='green')
-        self.enter.insert(0, 'Click on an item in the listbox')
-        self.enter.grid(row=2, column=0)
-        # pressing the return key will update edited line
-        self.enter.bind('<Return>', self.set_list)
-        # or double click left mouse button to update line
-        self.enter.bind('<Double-1>', self.set_list)
+            # use entry widget to display/edit selection
+            self.enter = Entry(self.table_panel, width=65, bg='green')
+            self.enter.insert(0, 'Click on an item in the listbox')
+            self.enter.grid(row=2, column=0)
+            # pressing the return key will update edited line
+            self.enter.bind('<Return>', self.set_list)
+            # or double click left mouse button to update line
+            self.enter.bind('<Double-1>', self.set_list)
 
-        # button to sort listbox
-        button1 = Button(self.table_panel, text='Trier la liste', command=self.sort_list)
-        button1.grid(row=3, column=0, sticky=W)
+            # button to sort listbox
+            button1 = Button(self.table_panel, text='Trier la liste', command=self.sort_list)
+            button1.grid(row=3, column=0, sticky=W)
 
-        # button to save the listbox's data lines to a file
-        button2 = Button(self.table_panel, text='Sauver la liste dans un fichier', command=self.save_list)
-        button2.grid(row=4, column=0, sticky=W)
+            # button to save the listbox's data lines to a file
+            button2 = Button(self.table_panel, text='Sauver la liste dans un fichier', command=self.save_list)
+            button2.grid(row=4, column=0, sticky=W)
 
-        # button to add a line to the listbox
-        button3 = Button(self.table_panel, text='Ajouter à la liste', command=self.add_item)
-        button3.grid(row=3, column=0, sticky=E)
+            # button to add a line to the listbox
+            button3 = Button(self.table_panel, text='Ajouter à la liste', command=self.add_item)
+            button3.grid(row=3, column=0, sticky=E)
 
-        # button to delete a line from listbox
-        button4 = Button(self.table_panel, text='Suprimer la ligne sélectionner', command=self.delete_item)
-        button4.grid(row=4, column=0, sticky=E)
+            # button to delete a line from listbox
+            button4 = Button(self.table_panel, text='Suprimer la ligne sélectionner', command=self.delete_item)
+            button4.grid(row=4, column=0, sticky=E)
 
-        # left mouse click on a list item to display selection
-        self.listbox.bind('<ButtonRelease-1>', self.get_list)
+            # left mouse click on a list item to display selection
+            self.listbox.bind('<ButtonRelease-1>', self.get_list)
 
+            self.first_click = False
         self.sub_panel.grid(row=4, column=0, padx=6, pady=6)
         self.table_panel.grid(row=2, column=1, padx=6, pady=6)
 
@@ -444,14 +530,17 @@ class NaturoToolsGui(Tk):
         function to read the listbox selection
         and put the result in an entry widget
         """
-        # get selected line index
-        index = self.listbox.curselection()[0]
-        # get the line's text
-        seltext = self.listbox.get(index)
-        # delete previous text in enter1
-        self.enter.delete(0, END)
-        # now display the selected text
-        self.enter.insert(0, seltext)
+        try:
+            # get selected line index
+            index = self.listbox.curselection()[0]
+            # get the line's text
+            seltext = self.listbox.get(index)
+            # delete previous text in enter1
+            self.enter.delete(0, END)
+            # now display the selected text
+            self.enter.insert(0, seltext)
+        except IndexError:
+            pass
 
     def get_gender(self):
         gender_list = []
@@ -510,7 +599,8 @@ class NaturoToolsGui(Tk):
                        "mail": addressToVerify,
                        "history": self.text.get("1.0", END),
                        "job": self.job.get(),
-                       "family_situation": self.family_situation.get()}
+                       "family_situation": self.family_situation.get(),
+                       "age": self.age.get()}
         return client_info
 
     def add_paraph(self):
